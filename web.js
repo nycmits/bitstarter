@@ -4,7 +4,14 @@ var app = express.createServer(express.logger());
 var fs = require("fs")
 
 app.get('/', function(request, response) {
-  response.send(fs.readFileSync('index.html'));
+  var buf = new Buffer(fs.readFileSync('index.html','utf8'));
+//  buf.write();
+  response.send(buf.toString('utf8'));
+//  response.send('lalala');
+
+//  var k = fs.readFileSync('index.html','utf8');
+//  response.send(k);
+
 //  response.send('Hello World 2!');
 });
 
