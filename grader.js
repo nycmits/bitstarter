@@ -28,6 +28,7 @@ var cheerio = require('cheerio');
 var HTMLFILE_DEFAULT = "index.html";
 var CHECKSFILE_DEFAULT = "checks.json";
 var URL_DEFAULT = "http://nameless-anchorage-7463.herokuapp.com";
+var URL_HTML_FILE = "url.html";
 
 var assertFileExists = function(infile) {
     var instr = infile.toString();
@@ -36,6 +37,17 @@ var assertFileExists = function(infile) {
         process.exit(1); // http://nodejs.org/api/process.html#process_process_exit_code
     }
     return instr;
+};
+
+var assertUrlExists = function(urlToCheck) {
+    var validator = require('validator');
+    try {
+	validator.check(urlToCheck).isUrl();
+    } catch (e) {
+	console.log("%s.  Exiting.", e.message);
+	process.exit(1);
+    }
+    return urlToCheck;
 };
 
 var cheerioHtmlFile = function(htmlfile) {
@@ -63,19 +75,34 @@ var clone = function(fn) {
     return fn.bind({});
 };
 
+var processHtml = function(fileToProcess) {
+    var checkJson = checkHtmlFile(fileToProcess, program.checks);
+    var outJson = JSON.stringify(checkJson, null, 4);
+    console.log(outJson);
+};
+
 if(require.main == module) {
     program
         .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
         .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
-        .option('-u, --url [url]', 'URL to index.html', URL_DEFAULT)
+        .option('-u, --url <url>', 'URL to index.html', clone(assertUrlExists))
         .parse(process.argv);
-    var checkJson = checkHtmlFile(program.file, program.checks);
-    var outJson = JSON.stringify(checkJson, null, 4);
-    console.log(outJson);
 
-    console.log(program.file);
-    console.log(program.checks);
-    console.log(program.url);
+    if (program.url) {
+	var rest = require('restler');
+	rest.get(program.url).on('complete', function(htmlFromUrl, response){
+	    fs.writeFileSync(URL_HTML_FILE, htmlFromUrl);
+	    processHtml(URL_HTML_FILE);
+	});
+    } else {
+	processHtml(program.file);
+    }
+
+//    console.log(program.file);
+//    console.log(program.checks);
+//    console.log(program.url);
+//    console.log(program.args);//always print empty array for some reason
+//    console.log(process.argv);
 } else {
     exports.checkHtmlFile = checkHtmlFile;
 }
