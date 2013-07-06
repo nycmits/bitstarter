@@ -33,8 +33,8 @@ var URL_HTML_FILE = "url.html";
 var assertFileExists = function(infile) {
     var instr = infile.toString();
     if(!fs.existsSync(instr)) {
-        console.log("%s does not exist. Exiting.", instr);
-        process.exit(1); // http://nodejs.org/api/process.html#process_process_exit_code
+	console.log("%s does not exist. Exiting.", instr);
+	process.exit(1); // http://nodejs.org/api/process.html#process_process_exit_code
     }
     return instr;
 };
@@ -63,8 +63,8 @@ var checkHtmlFile = function(htmlfile, checksfile) {
     var checks = loadChecks(checksfile).sort();
     var out = {};
     for(var ii in checks) {
-        var present = $(checks[ii]).length > 0;
-        out[checks[ii]] = present;
+	var present = $(checks[ii]).length > 0;
+	out[checks[ii]] = present;
     }
     return out;
 };
@@ -83,16 +83,16 @@ var processHtml = function(fileToProcess) {
 
 if(require.main == module) {
     program
-        .option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
-        .option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
-        .option('-u, --url <url>', 'URL to index.html', clone(assertUrlExists))
-        .parse(process.argv);
+	.option('-f, --file <html_file>', 'Path to index.html', clone(assertFileExists), HTMLFILE_DEFAULT)
+	.option('-c, --checks <check_file>', 'Path to checks.json', clone(assertFileExists), CHECKSFILE_DEFAULT)
+	.option('-u, --url <url>', 'URL to index.html', clone(assertUrlExists))
+	.parse(process.argv);
 
     if (program.url) {
 	var rest = require('restler');
 	rest.get(program.url).on('complete', function(htmlFromUrl, response){
-	    fs.writeFileSync(URL_HTML_FILE, htmlFromUrl);
-	    processHtml(URL_HTML_FILE);
+	fs.writeFileSync(URL_HTML_FILE, htmlFromUrl);
+	processHtml(URL_HTML_FILE);
 	});
     } else {
 	processHtml(program.file);
